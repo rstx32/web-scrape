@@ -42,7 +42,7 @@ const getDoscomMembers = async (startNIM, endNIM, year) => {
   for (let index = startNIM; index < endNIM; index++) {
     const dinusURL = `https://dinus.ac.id/mahasiswa/A11.${year}.${index}`
     const mhs = await scrapeData(dinusURL)
-  
+
     if (mhs !== null) {
       dataDoscom.push(mhs)
     }
@@ -51,42 +51,50 @@ const getDoscomMembers = async (startNIM, endNIM, year) => {
   fs.writeFileSync('doscom-2018.json', JSON.stringify(dataDoscom))
 }
 
-const countMahasiswaAngkatan = async () => {
-  let jumlah = 0
-  for (let nim = 10831, stop = 0; nim < 12000; nim++) {
-    const url = `https://dinus.ac.id/mahasiswa/A11.2018.${nim}`
+// fetch semua angkatan mahasiswa udinus
+const getAngkatan = async (startNIM, endNIM, angkatan) => {
+  let dataAngkatan = []
+  for (let nim = startNIM, stop = 0; nim < endNIM; nim++) {
+    const url = `https://dinus.ac.id/mahasiswa/A11.${angkatan}.${nim}`
     const { data } = await axios.get(url)
     const $ = cheerio.load(data)
     const html = $('body')
+    const temp = {
+      name: '',
+      nim: '',
+    }
 
     html.each((index, element) => {
-      if ($($(element).find('td')[2]).text() !== '') {
-        console.log(`${nim} (${$($(element).find('td')[2]).text()})`)
-        jumlah++
+      const x = $(element).find('td')
+      if ($(x[2]).text() !== '') {
+        console.log(`${nim} - ` + $(x[2]).text())
+        temp.name = $(x[2]).text()
+        temp.nim = $(x[5]).text()
         stop = 0
       } else {
-        console.log(`${nim} bukan angkatan 2018`)
-        stop++
+        console.log(`${nim} bukan angkatan ${angkatan}`)
       }
     })
+    
+    if (temp.name !== '' && temp.nim !== '') {
+      dataAngkatan.push(temp)
+    }
 
     if (stop > 20) {
       break
     }
   }
 
-  console.log(`total mahasiswa angkatan 2018 : ${jumlah}`)
+  fs.writeFileSync(`angkatan-${angkatan}.json`, JSON.stringify(dataAngkatan))
 }
 
 // angkatan 2017
 // nim start : 10055
 // nim stop : 10831
-// total mahasiswa angkatan 2017 : 724
 
 // angkatan 2018
 // nim start : 10842
 // nim stop : 11615
-// total mahasiswa angkatan 2018 : 743
 
 // getDoscomMembers(10055, 10831, 2017)
-// countMahasiswaAngkatan()
+// getAngkatan(10055, 10831, 2017)
