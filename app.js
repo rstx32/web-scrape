@@ -1,6 +1,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import fs from 'fs'
+import writeXLSX from 'write-excel-file/node'
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const scrapeData = async (url) => {
@@ -75,7 +76,7 @@ const getAngkatan = async (startNIM, endNIM, angkatan) => {
         console.log(`${nim} bukan angkatan ${angkatan}`)
       }
     })
-    
+
     if (temp.name !== '' && temp.nim !== '') {
       dataAngkatan.push(temp)
     }
@@ -98,3 +99,35 @@ const getAngkatan = async (startNIM, endNIM, angkatan) => {
 
 // getDoscomMembers(10055, 10831, 2017)
 // getAngkatan(10055, 10831, 2017)
+
+const data = fs.readFileSync('doscom.json', 'utf-8')
+const jsonData = JSON.parse(data)
+const schema = [
+  {
+    column: 'NIM',
+    type: String,
+    width: 20,
+    value: (college) => college.nim,
+  },
+  {
+    column: 'Name',
+    type: String,
+    width: 40,
+    value: (college) => college.name,
+  },
+  {
+    column: 'Email',
+    type: String,
+    width: 30,
+    value: (college) =>
+      college.nim
+        .replace(/\./g, '')
+        .replace('A', '1')
+        .concat('@mhs.dinus.ac.id'),
+  },
+]
+
+await writeXLSX(jsonData, {
+  schema,
+  filePath: 'doscom.xlsx',
+})

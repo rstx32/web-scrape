@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
-    "cheerio": "^1.0.0-rc.11"
+    "cheerio": "^1.0.0-rc.11",
+    "nodemon": "^2.0.16",
+    "write-excel-file": "^1.4.4"
   },
   "type": "module"
 }
